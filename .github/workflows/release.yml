@@ -1,0 +1,58 @@
+name: Build and release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (for example v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pairmado-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build and verify
+        shell: pwsh
+        run: ./build.ps1 -Verify
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v\d+\.\d+\.\d+$') {
+            throw 'Tag must have the form v1.0.0.'
+          }
+          $notes = @'
+          PairMado の Windows 用リリースです。
+
+          下の Assets から PairMado-Windows.zip をダウンロードし、すべて展開して PairMado.exe を起動してください。
+
+          - 左右2ペインへ画像をドラッグ＆ドロップ
+          - 各ペインの矢印で同じフォルダ内の画像を前後に切り替え
+          - 名前・作成日時・更新日時の昇順／降順を左右別々に選択
+          - 縦横比を保って最大表示し、ウィンドウのサイズ変更に追従
+
+          Windows / .NET Framework 4.8 以降。PNG・JPEG・BMP・GIF・TIFF・ICOに対応します。
+          GIF・TIFFは最初のフレームを表示します。WebP・AVIFはWindowsの対応コーデックがある場合のみ表示できます。
+
+          ビルド時に6種類の並べ替え、前後移動、左右の独立動作などを検証しています。
+          MIT License。ZIPにライセンス文を同梱しています。
+          '@
+          $notesPath = Join-Path $env:RUNNER_TEMP 'pairmado-release-notes.md'
+          Set-Content -LiteralPath $notesPath -Value $notes -Encoding utf8
+          gh release create $env:RELEASE_TAG dist/PairMado-Windows.zip --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "PairMado $env:RELEASE_TAG" --notes-file $notesPath
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }
