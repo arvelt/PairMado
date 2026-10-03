@@ -1,0 +1,7 @@
+/dist/
+/test-output/
+/bin/
+/obj/
+.vs/
+*.user
+*.suo
