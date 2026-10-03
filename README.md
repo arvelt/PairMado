@@ -6,7 +6,7 @@
 
 ## 起動
 
-リリースページに配布ZIPがある場合は、`PairMado-Windows.zip` をダウンロードし、すべて展開して `PairMado.exe` を起動してください。
+[リリースページ](https://github.com/arvelt/PairMado/releases/latest)から `PairMado-Windows.zip` をダウンロードし、すべて展開して `PairMado.exe` を起動してください。
 ソースコードから作る場合は、下記のビルド手順を使用してください。
 Windowsの.NET Framework 4.8以降が動作条件です。開発・動作検証はWindows 11の.NET Framework 4.8.1環境で行っています。
 
@@ -48,6 +48,11 @@ powershell -NoProfile -File .\build.ps1 -Verify
 
 テスト画像を `test-output` 以下の専用フォルダに生成し、6種類の並べ替え、数値を含む名前の順序、同じ階層だけの列挙、前後移動、端での停止、左右の独立動作、エラー時の表示保持、一覧更新、ファイルロックの解放を確認します。
 検証後はテスト機能を含まない配布用バイナリを再ビルドします。
+
+## リリース作成
+
+GitHubの Actions → Build and release → Run workflow で、新しいタグ（例：`v1.0.1`）を指定して実行します。
+Windows上でビルド・検証後、指定タグのリリースを作成し、配布ZIPを添付します。既存のリリースを上書きしません。
 
 ## ファイル構成
 
